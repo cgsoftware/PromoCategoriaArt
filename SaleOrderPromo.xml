@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+    		 <record model="ir.ui.view" id="sale_promo_form_view">
+                <field name="name">sale.order_promo.form</field>
+                <field name="model">sale.order</field>
+                <field name="type">form</field>
+                <field name="inherit_id" ref="sale.view_order_form"/>
+                <field name="arch" type="xml">
+				<notebook position="inside">
+					<page  string="Righe Promo da Utilizzare">
+						<field colspan="4" mode="tree" name="righe_promo" nolabel="1" widget="one2many_list">
+						 <tree editable="top" string="Promo da Utilizzare/Utilizzate">
+						 	<field name="promo_id" > </field>
+						 </tree>
+						</field>
+					</page>
+					<page  string="Info Punti">
+						<field name="punti_caricati" > </field>
+						<field name="punti_scaricati" > </field>
+						<field name="val_punti_sca" > </field>
+						<field name="totale_saldo_punti" > </field>
+					</page>
+					
+				</notebook>
+				
+                </field>
+            </record>
+    
+    
+    		 <record model="ir.ui.view" id="res_partner_promo_form_view">
+                <field name="name">res.partner_promo.form</field>
+                <field name="model">res.partner</field>
+                <field name="type">form</field>
+                <field name="inherit_id" ref="base.view_partner_form"/>
+                <field name="arch" type="xml">
+				<notebook position="inside">
+					<page  string="Info Punti">
+						<field name="tab_punti" > </field>	
+						<field name="totale_carichi_punti" > </field>	
+						<newline></newline>					
+						<field name="totale_scarichi_punti" > </field>
+						<field name="totale_saldo_punti" > </field>
+					</page>
+					
+				</notebook>
+				
+                </field>
+            </record>
+    
+  		 <record model="ir.ui.view" id="cat_punti_form_view">
+                <field name="name">cat_punti.form</field>
+                <field name="model">res.partner.category</field>
+                <field name="type">form</field>
+                <field name="inherit_id" ref="base.view_partner_category_form"/>
+                <field name="arch" type="xml">
+                        <field name="parent_id" position="after">
+                        	<field name="tab_punti"/>
+                        </field>
+
+                </field>
+            </record>  
+    
+    
+    </data>
+</openerp>

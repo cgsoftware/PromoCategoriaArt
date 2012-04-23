@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+    		 <record model="ir.ui.view" id="fiscaldoc_promo_form_view">
+                <field name="name">fiscaldoc_promo.form</field>
+                <field name="model">fiscaldoc.header</field>
+                <field name="type">form</field>
+                <field name="inherit_id" ref="ItalianFiscalDocument.view_fiscaldoc_form"/>
+                <field name="arch" type="xml">
+				<notebook position="inside">
+					<page  string="Righe Promo da Utilizzare">
+						<group colspan="4" >
+						 <separator colspan="4" string="Promo Atipiche" />
+							<field name="partner_amico_id" ></field>
+						</group>
+						
+
+						<field colspan="4" mode="tree" name="righe_promo" nolabel="1" widget="one2many_list">
+						  <separator colspan="4" string="Elenco Promo Utilizzabili o Utilizzate" />						
+						  <tree editable="top" string="Promo da Utilizzare/Utilizzate"  >
+						 	 <field name="promo_id" > </field>
+						 	 <field name="des_estesa" > </field>
+						 	 <field name="utilizza" > </field>
+						   </tree>
+						</field>
+
+					</page>
+					
+					<page  string="Info Punti">
+						<field name="punti_caricati" > </field>
+						<field name="punti_scaricati" on_change="on_change_scarichi(punti_scaricati,parent.partner_id)" > </field>
+						<field name="val_punti_sca" > </field>
+						<field name="totale_saldo_punti" > </field>
+					</page>
+					
+				</notebook>
+				
+                </field>
+            </record>
+    
+    </data>
+</openerp>

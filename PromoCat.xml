@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<openerp>
+    <data>
+
+
+            <record model="ir.ui.view"  id="promo_tree_view">
+                <field name="name">promo.tree</field>
+                <field name="model">promo</field>
+                <field name="type">tree</field>
+                <field name="arch" type="xml" >
+                    <tree string="Elenco Promo" >
+                        <field name="name" select="1" />
+                        <field name="desc_promo" select="1" />                    
+                        <field name="da_data" select="1" />
+                        <field name="a_data" select="1" />
+                        <field name="promo_qt_cat" />
+                        <field name="promo_totale" />
+                        <field name="sc_riv" />
+                    </tree>
+                </field>
+            </record>
+
+            <record model="ir.ui.view" id="promo_form_view">
+                <field name="name">promo.form</field>
+                <field name="model">promo</field>
+                <field name="type">form</field>
+                <field name="arch" type="xml">
+                    <form string="Gestione Promo">
+                        <field name="name" select="1"/>
+                        <field name="desc_promo" select="1"/>
+                        <field name="da_data" select="1"/>
+                        <field name="a_data" select="1"/>
+                        <newline></newline>
+                        <group colspan="4">
+                        	<separator colspan="4" string="Descrizione Estesa"/>
+                        	<field name="des_estesa" nolabel="1" required="True" />
+                        </group>
+                        <newline></newline>
+                        <field name="promo_qt_cat" />
+                        <field name="promo_totale" />
+                        <field name="sconto_totale" />
+                        <field name="sc_riv" />                 
+                        <field name="perc_provv" />
+                       	<field name="rapporto_punti" />  
+                        <field name="punti_agg" />
+                        <newline></newline>
+                            <group  colspan="4" >
+                                    <separator colspan="4" string="Limiti della Promo"/>
+                                    <field  name="qt_tot_min" />
+                                    <field  name="qt_tot_max" />
+                            </group>
+                        
+                    <notebook colspan="5">
+                        <page string="Prezzi e Sconti Netti">
+							 <field colspan="4" mode="tree" name="righe_promo" nolabel="1" widget="one2many_list" >
+							 <tree editable="top" string="Dettaglio Prezzi e Sconti Netti Promo">
+							 	<field name="categ_id" />
+							 	<field name="marchio_id" />
+							 	<field name="product_id" on_change="on_change_articolo(product_id,context)" />
+								 <field name="flag_art" />
+								 <field name="qta_mov_min" />
+							 	<field name="qta_mov_max" />
+							 	<field name="listino_pubb" readonly="True" />
+							 	<field name="netto_pubb" />
+							 	<field name="listino_riv"  readonly="True" />
+							 	<field name="netto_riv" />
+							 	<field name="sconto_al_pubb" />
+							 	<field name="sconto_al_riv" />
+							 </tree>
+							 </field>
+						</page>
+                        <page string="Categorie Partner">
+                            <group >
+                                    <separator colspan="4" string="Categories"/>
+                                    <field  colspan="4" name="righe_partner_cat" nolabel="1"/>
+                            </group>
+							 						
+						</page>
+						
+						</notebook>    			
+    
+                        
+                    </form>
+                </field>
+            </record>
+
+
+
+            <record model="ir.actions.act_window" id="action_promo">
+                <field name="name">Promozioni </field>
+                <field name="type">ir.actions.act_window</field>
+                <field name="res_model">promo</field>                
+                <field name="view_mode">tree,form</field>
+           		
+            </record>
+
+			<menuitem id="promo_menu" name="Tabella Promo" parent="base.menu_config_address_book" action="action_promo"/>
+		 	
+		 
+            
+            <record model="ir.ui.view" id="tabella_punti_tree_view">
+                <field name="name">tabella.punti.tree</field>
+                <field name="model">tabella.punti</field>
+                <field name="type">tree</field>
+                <field name="arch" type="xml">
+                    <tree string="Elenco Tabella Punti">
+                        <field name="name" />
+                        <field name="desc_calcolo"/>
+                        <field name="base_calc"/>                        
+                        <field name="rapporto"/>
+                        <field name="product_id"/>                                                
+                    </tree>
+                </field>
+            </record>
+
+            <record model="ir.ui.view" id="tabella_punti_form_view">
+                <field name="name">tabella_punti.form</field>
+                <field name="model">tabella.punti</field>
+                <field name="type">form</field>
+                <field name="arch" type="xml">
+                    <form string=" Manutenzione Tabella Punti">
+                        <field name="name" select="1"/>                       
+                        <field name="desc_calcolo" select="1" />
+                        <newline></newline>                        
+                        <group colspan="4" >
+                              <separator colspan="4" string="Categories"/>                        
+                        		<field name="python_code"/>
+                        </group>                        
+                        <newline></newline>
+                        <field name="base_calc"/>
+                      <!--   <field name="rapporto"/>  -->
+                        <field name="product_id"/>        
+                        <notebook colspan="5">
+                        	<page  string="Dettaglio Premi">
+                        	<field  colspan="4" mode="tree" name="righe_premi" nolabel="1" widget="one2many_list"  >
+                        	  <tree editable="top" string="Dettaglio Premi">
+                        	  		<field name="codice"/>
+                        	  		<field name="punti"/>
+                        	  		<field name="valore"/>
+                        	  </tree>
+                        	</field>
+                        	</page>
+                        </notebook>                                        
+                        
+                    </form>
+                </field>
+            </record>
+
+            <record model="ir.actions.act_window" id="action_tabella_punti_tree_view">
+                <field name="name">tabella_punti</field>
+                <field name="type">ir.actions.act_window</field>
+                <field name="res_model">tabella.punti</field>
+		   <!-- <field name="domain">[('field_name','condition',criteria)]</field>-->
+                
+                <field name="view_mode">tree,form</field>
+           <!--      <field name="view_id" ref="object_name_tree_view"/>  -->
+           		
+            </record>
+
+			<menuitem id="tabella_punti_menu" name="Tabella Punti" parent="base.menu_config_address_book" action="action_tabella_punti_tree_view"/>
+
+			
+			
+    </data>
+</openerp>
+

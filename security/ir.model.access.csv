@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_promo,promo,model_promo,,1,1,1,1
+access_promo_dett,promo.dett,model_promo_dett,,1,1,1,1
+access_tabella_punti,tabella.punti,model_tabella_punti,,1,1,1,1
+access_fiscaldoc_promo,fiscaldoc.promo,model_fiscaldoc_promo,,1,1,1,1
+access_sale_order_promo,sale.order.promo,model_sale_order_promo,,1,1,1,1
