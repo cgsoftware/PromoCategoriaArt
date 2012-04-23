@@ -103,7 +103,7 @@ class promo(osv.osv):
         return ok
     
     def check_promo(self,cr,uid,model,promo,riga_art):
-        pass
+        #import pdb;pdb.set_trace()
         # cicla sulle righe della promo per verifcare se l'articolo va preso in considerazione nella promo
         if promo.righe_promo:
             for riga_promo in  promo.righe_promo:
@@ -112,24 +112,26 @@ class promo(osv.osv):
                        (riga_promo.qta_mov_max>=riga_art.product_uom_qty or riga_promo.qta_mov_max) and riga_promo.flag_art)
                        or not riga_promo.flag_art ):
                     # Ha verificato prima se la qta è regolare e poi fa il resto dei controlli
-                    if riga_promo.product_id==riga_art.product_id.id:
+                    if riga_promo.product_id.id==riga_art.product_id.id:
                         # è una promo del singolo articolo
                         # return {'promo_riga_id':riga_promo.id,'riga_doc_id':riga_art.id}                        
                             return {'promo_riga':riga_promo,'riga_doc':riga_art}
-                    if riga_promo.categ_id:
+                if riga_promo.categ_id:
                         if riga_promo.marchio_id:
                             # deve verificare se l'articolo ha quel marchio nei compatibili
-                            if riga_promo.categ_id==riga_art.product_id.categ_id.id and self.verifica_marchio(cr, uid, riga_art.product_id.id, riga_promo.marchio_id.id):                                
+                            if riga_promo.categ_id.id==riga_art.product_id.categ_id.id and self.verifica_marchio(cr, uid, riga_art.product_id.id, riga_promo.marchio_id.id):                                
                                     return {'promo_riga':riga_promo,'riga_doc':riga_art}
                         else:
-                            if riga_promo.categ_id==riga_art.product_id.categ_id.id:                                
+                            if riga_promo.categ_id.id==riga_art.product_id.categ_id.id:                                
                                     return {'promo_riga':riga_promo,'riga_doc':riga_art}
+                else:
                     if riga_promo.marchio_id:
                         if  self.verifica_marchio(cr, uid, riga_art.product_id.id, riga_promo.marchio_id.id):
                             return {'promo_riga':riga_promo,'riga_doc':riga_art}  
         return False
     
     def calcoli_promo(self,cr,uid,ids_doc,model,context=None):
+        #import pdb;pdb.set_trace()
         if ids_doc:
             for doc in self.pool.get(model).browse(cr,uid,ids_doc):
                 if doc.righe_promo:
@@ -139,9 +141,10 @@ class promo(osv.osv):
                             # verificare i vincoli della promo ed applicarli se attivi alrimenti torvare il modo di segnalare senza errore 
                             # la non rispondenza alla promo.
                             lst_art_promo = []
-                            totmin = doc_riga_promo.qt_tot_min
-                            totmax = doc_riga_promo.qt_tot_max
+                            totmin = doc_riga_promo.promo_id.qt_tot_min
+                            totmax = doc_riga_promo.promo_id.qt_tot_max
                             ok_promo = False
+                            #import pdb;pdb.set_trace()
                             promo = doc_riga_promo.promo_id
                             if model == 'fiscaldoc.header':
                               for riga_art in doc.righe_articoli:
@@ -221,11 +224,11 @@ class promo(osv.osv):
                                                 else:
                                                     dativar['product_prezzo_unitario']= rig_art.product_prezzo_unitario
                                                 dativar['sconti_riga']=""
-                                                if promo.sconto_al_pubb:
-                                                    dativar['discount_riga']= promo.sconto_al_pubb
+                                                if promo_rig.sconto_al_pubb:
+                                                    dativar['discount_riga']= promo_rig.sconto_al_pubb
                                                 else:
                                                     dativar['discount_riga']= rig_art.discount_riga
-                                                dativar['prezzo_netto']= riga_obj.calcola_netto(cr, uid, ids,dativar['product_prezzo_unitario'], dativar['discount_riga'])
+                                                dativar['prezzo_netto']= riga_obj.calcola_netto(cr, uid, [rig_art.id],dativar['product_prezzo_unitario'], dativar['discount_riga'])
                                                 dativar['totale_riga']=dativar['prezzo_netto']*rig_art.product_uom_qty
                                             else:
                                                 # listino rivenditore
@@ -234,11 +237,11 @@ class promo(osv.osv):
                                                 else:
                                                     dativar['product_prezzo_unitario']= rig_art.product_prezzo_unitario
                                                 dativar['sconti_riga']=""
-                                                if promo.sconto_al_riv:
-                                                    dativar['discount_riga']= promo.sconto_al_riv
+                                                if promo_rig.sconto_al_riv:
+                                                    dativar['discount_riga']= promo_rig.sconto_al_riv
                                                 else:
                                                     dativar['discount_riga']= rig_art.discount_riga
-                                                dativar['prezzo_netto']= riga_obj.calcola_netto(cr, uid, ids, dativar['product_prezzo_unitario'], dativar['discount_riga'])
+                                                dativar['prezzo_netto']= riga_obj.calcola_netto(cr, uid, [rig_art.id], dativar['product_prezzo_unitario'], dativar['discount_riga'])
                                                 dativar['totale_riga']=dativar['prezzo_netto']*rig_art.product_uom_qty
                                             if dativar:
                                                 ok  = riga_obj.write(cr,uid,[rig_art.id],dativar)
@@ -253,8 +256,8 @@ class promo(osv.osv):
                                                 else:
                                                     dativar['price_unit']= rig_art.product_prezzo_unitario
                                                 
-                                                if promo.sconto_al_pubb:
-                                                    dativar['discount']= promo.sconto_al_pubb
+                                                if promo_rig.sconto_al_pubb:
+                                                    dativar['discount']= promo_rig.sconto_al_pubb
                                                 else:
                                                     dativar['discount']= rig_art.discount_riga
                                             else:
@@ -264,8 +267,8 @@ class promo(osv.osv):
                                                 else:
                                                     dativar['price_unit']= rig_art.product_prezzo_unitario
                                                 
-                                                if promo.sconto_al_riv:
-                                                    dativar['discount']= promo.sconto_al_riv
+                                                if promo_rig.sconto_al_riv:
+                                                    dativar['discount']= promo_rig.sconto_al_riv
                                                 else:
                                                     dativar['discount']= rig_art.discount_riga
                                             if dativar:
@@ -370,40 +373,40 @@ class tabella_punti(osv.osv):
                 for x in reads]
         
     def calc_punti(self,cr,uid,ids_doc,model,context=None):
-        
+        numpunti = 0
         if ids_doc:
             for doc in self.pool.get(model).browse(cr,uid,ids_doc):
                 tabpu = self.pool.get('res.partner').get_tab_punti(cr,uid,doc.partner_id.id,context)
                 if tabpu:
-                                                
+                        #import pdb;pdb.set_trace()                        
                         if tabpu.base_calc == 'tot': # sul totale documento
                             if model == 'fiscaldoc.header':
                                 calcolo = tabpu.python_code.replace('base','doc.totale_documento')
-                                calcolo = tabpu.python_code.replace('qta','1')
+                                calcolo = calcolo.replace('qta','1')
                             else:
                                 calcolo = tabpu.python_code.replace('base','doc.amount_total')
-                                calcolo = tabpu.python_code.replace('qta','1')
+                                calcolo = calcolo.replace('qta','1')
                         if tabpu.base_calc == 'tor': # sul totale di riga 
                             if model == 'fiscaldoc.header':
                                 calcolo = tabpu.python_code.replace('base','riga.totale_riga')
-                                calcolo = tabpu.python_code.replace('qta','1')
+                                calcolo = calcolo.replace('qta','1')
                             else:
                                 calcolo = tabpu.python_code.replace('base','riga.price_subtotal')
-                                calcolo = tabpu.python_code.replace('qta','1')
+                                calcolo = calcolo.replace('qta','1')
                         if tabpu.base_calc == 'prl': # sul prezzo di listino assegnato 
                             if model == 'fiscaldoc.header':
                                 calcolo = tabpu.python_code.replace('base','riga.product_prezzo_unitario')
-                                calcolo = tabpu.python_code.replace('qta','riga.product_uom_qty')
+                                calcolo = calcolo.replace('qta','riga.product_uom_qty')
                             else:
                                 calcolo = tabpu.python_code.replace('base','riga.price_unit')
-                                calcolo = tabpu.python_code.replace('qta','riga.product_uom_qty')
+                                calcolo = calcolo.replace('qta','riga.product_uom_qty')
                         if tabpu.base_calc == 'prn': # sul prezzo prezzo netto di riga 
                             if model == 'fiscaldoc.header':
                                 calcolo = tabpu.python_code.replace('base','riga.prezzo_netto')
-                                calcolo = tabpu.python_code.replace('qta','riga.product_uom_qty')
+                                calcolo = calcolo.replace('qta','riga.product_uom_qty')
                             else:
                                 calcolo = tabpu.python_code.replace('base','riga.price_unit* (1 - (discount or 0.0) / 100.0)')
-                                calcolo = tabpu.python_code.replace('qta','riga.product_uom_qty')
+                                calcolo = calcolo.replace('qta','riga.product_uom_qty')
                         if tabpu.base_calc == 'tot':
                             # non ho bisogno di cliclare sulle righe del documento
                             numpunti = eval(calcolo)
@@ -416,8 +419,10 @@ class tabella_punti(osv.osv):
                                 for riga in doc.order_line:
                                     numpunti += eval(calcolo)                                
                         if numpunti:
-                           self.pool.get(model).write(cr,uid,[doc.id],{'punti_caricati':numpunti})
-        return True
+                            pass
+                           #import pdb;pdb.set_trace()
+                           #self.pool.get(model).write(cr,uid,[doc.id],{'punti_caricati':numpunti})
+        return numpunti
 
         
     

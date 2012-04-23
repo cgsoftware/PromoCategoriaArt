@@ -22,11 +22,23 @@ class FiscalDocHeader(osv.osv):
                    res[document.id]['totale_pagare'] = res[document.id].get('totale_pagare',0) - document.val_punti_sca
        return res       
    
+   def _totpunti_doc(self, cr, uid, ids, field_name, arg, context=None):
+          res={}
+          if ids:
+              for document in self.browse(cr,uid,ids):
+                res[document.id] = {'punti_caricati':0.0}
+                res[document.id]['punti_caricati']= self.pool.get('tabella.punti').calc_punti(cr,uid,[document.id],'fiscaldoc.header',context)
+                  
+          return res
+          
+
+   
    _columns = { 
                 'partner_amico_id': fields.many2one('res.partner', 'Amico Presentatore',  required=False),
                 'righe_promo': fields.one2many('fiscaldoc.promo', 'name', 'Promo Attive alla Conferma', required=False),
-                'punti_caricati':fields.float('N. Punti Caricati ',digits_compute=dp.get_precision('Account'),readonly=True),
-                'punti_scaricati':fields.float('N. Punti Scaricati ',digits_compute=dp.get_precision('Account'),readonly=False),
+                # 'punti_caricati':fields.float('N. Punti Caricati ',digits_compute=dp.get_precision('Account'),readonly=True),
+                'punti_caricati':fields.function(_totpunti_doc, method=True, digits_compute=dp.get_precision('Account'), string='N. Punti Caricati', store=False,multi='sums' ),
+                'punti_scaricati':fields.float('N. Punti Scaricati ',digits_compute=dp.get_precision('Account'),readonly=False),               
                 'val_punti_sca':fields.float('Valore Punti Scaricati',digits_compute=dp.get_precision('Account'),readonly=True),                
                 'totale_saldo_punti': fields.related('partner_id', 'totale_saldo_punti', string='Saldo Punti', type='float', relation='res.partner', help="Saldo Punti Attuale"),
                 'totale_merce':fields.function(_totgen_doc, method=True, digits_compute=dp.get_precision('Account'), string='Totale Merce', store=True, help="Totale Merce", multi='sums'),
@@ -83,14 +95,14 @@ class FiscalDocHeader(osv.osv):
        res = super(FiscalDocHeader,self).write(cr,uid,ids,vals,context)
        if res:
            if ids:
-               ok = self.pool.get('tabella.punti').calc_punti(cr,uid,ids,'fiscaldoc.header',context)
-               ok = self.pool.get('promo').calcoli_promo(cr,uid,[res],'fiscaldoc.header',context)
+               #ok = self.pool.get('tabella.punti').calc_punti(cr,uid,ids,'fiscaldoc.header',context)
+               ok = self.pool.get('promo').calcoli_promo(cr,uid,ids,'fiscaldoc.header',context)
        return res       
    
    def create(self, cr, uid, vals, context=None):
        res = super(FiscalDocHeader,self).create(cr,uid,vals,context)
        if res:
-           ok = self.pool.get('tabella.punti').calc_punti(cr,uid,[res],'fiscaldoc.header',context)
+           #ok = self.pool.get('tabella.punti').calc_punti(cr,uid,[res],'fiscaldoc.header',context)
            ok = self.pool.get('promo').calcoli_promo(cr,uid,[res],'fiscaldoc.header',context)
        return res
    
@@ -244,25 +256,39 @@ FiscalDocRighe()
 
 class sale_order(osv.osv):
     _inherit = "sale.order"   
+
+    def _totpunti_doc(self, cr, uid, ids, field_name, arg, context=None):
+          res={}
+          if ids:
+              for document in self.browse(cr,uid,ids):
+                res[document.id] = {'punti_caricati':0.0}
+                res[document.id]['punti_caricati']= self.pool.get('tabella.punti').calc_punti(cr,uid,[document.id],'fiscaldoc.header',context)
+                  
+          return res
+    
     _columns = {
                 'righe_promo': fields.one2many('sale.order.promo', 'name', 'Promo Attive alla Conferma', required=False),
-                'punti_caricati':fields.float('N. Punti Caricati ',digits_compute=dp.get_precision('Account'),readonly=True),
+                'punti_caricati':fields.function(_totpunti_doc, method=True, digits_compute=dp.get_precision('Account'), string='N. Punti Caricati', store=False,multi='sums' ),
                 'punti_scaricati':fields.float('N. Punti Scaricati ',digits_compute=dp.get_precision('Account'),readonly=True),
                 'val_punti_sca':fields.float('Valore Punti Scaricati',digits_compute=dp.get_precision('Account'),readonly=True),   
                 'totale_saldo_punti': fields.related('partner_id', 'totale_saldo_punti', string='Saldo Punti', type='float', relation='res.partner', help="Saldo Punti Attuale"),                             
                 }
     
+    
+    
     def write(self, cr, uid, ids, vals, context=None):
        res = super('sale_order',self).write(cr,uid,ids,vals,context)
        if res:
            if ids:
-               ok = self.pool.get('tabella.punti').calc_punti(cr,uid,ids,'sale_order',context)
+               #ok = self.pool.get('tabella.punti').calc_punti(cr,uid,ids,'sale_order',context)
+               pass
        return res       
    
     def create(self, cr, uid, vals, context=None):
        res = super('sale_order',self).create(cr,uid,vals,context)
        if res:
-           ok = self.pool.get('tabella.punti').calc_punti(cr,uid,[res],'sale_order',context)
+           #ok = self.pool.get('tabella.punti').calc_punti(cr,uid,[res],'sale_order',context)
+           pass
        return res
 
 sale_order()
