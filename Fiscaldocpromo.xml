@@ -7,7 +7,12 @@
                 <field name="type">form</field>
                 <field name="inherit_id" ref="ItalianFiscalDocument.view_fiscaldoc_form"/>
                 <field name="arch" type="xml">
+				<field name="listino_id" position="after">
+					<field name="totale_saldo_punti"  readonly="1"  > </field>
+				</field>
+                
 				<notebook position="inside">
+				
 					<page  string="Righe Promo da Utilizzare">
 						<group colspan="4" >
 						 <separator colspan="4" string="Promo Atipiche" />
@@ -30,7 +35,7 @@
 						<field name="punti_caricati" > </field>
 						<field name="punti_scaricati" on_change="on_change_scarichi(punti_scaricati,parent.partner_id)" > </field>
 						<field name="val_punti_sca" > </field>
-						<field name="totale_saldo_punti" > </field>
+					<!-- 	<field name="totale_saldo_punti" > </field>   -->
 					</page>
 					
 				</notebook>

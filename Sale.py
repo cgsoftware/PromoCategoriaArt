@@ -40,7 +40,8 @@ class FiscalDocHeader(osv.osv):
                 'punti_caricati':fields.function(_totpunti_doc, method=True, digits_compute=dp.get_precision('Account'), string='N. Punti Caricati', store=False,multi='sums' ),
                 'punti_scaricati':fields.float('N. Punti Scaricati ',digits_compute=dp.get_precision('Account'),readonly=False),               
                 'val_punti_sca':fields.float('Valore Punti Scaricati',digits_compute=dp.get_precision('Account'),readonly=True),                
-                'totale_saldo_punti': fields.related('partner_id', 'totale_saldo_punti', string='Saldo Punti', type='float', relation='res.partner', help="Saldo Punti Attuale"),
+                'totale_saldo_punti': fields.float('Saldo Punti ',digits_compute=dp.get_precision('Account'),readonly=False,help="Saldo Punti Attuale"),
+    # fields.related('partner_id', 'totale_saldo_punti', string='Saldo Punti', type='float', relation='res.partner', help="Saldo Punti Attuale"),
                 'totale_merce':fields.function(_totgen_doc, method=True, digits_compute=dp.get_precision('Account'), string='Totale Merce', store=True, help="Totale Merce", multi='sums'),
                 'totale_netto_merce':fields.function(_totgen_doc, method=True, digits_compute=dp.get_precision('Account'), string='Totale Netto Merce', store=True, help="Totale Merce", multi='sums'),
                 'totale_imponibile':fields.function(_totgen_doc, method=True, digits_compute=dp.get_precision('Account'), string='Totale Imponibile', store=True, multi='sums'),
@@ -52,9 +53,9 @@ class FiscalDocHeader(osv.osv):
    
    def onchange_partner_id(self, cr, uid, ids, part, context):
           res = super(FiscalDocHeader,self).onchange_partner_id(cr, uid, ids, part, context)
-          if res:
-              val = res.get('value',False)
-              warning = res.get('warning',False)
+          val = res.get('value',False)
+          warning = res.get('warning',False)          
+          if res and part:
               data_rif=time.strftime('%Y-%m-%d')
               lista_promo = self.pool.get('promo').lista_attive(cr,uid,part,data_rif,context)
               if lista_promo:
@@ -66,7 +67,10 @@ class FiscalDocHeader(osv.osv):
                     'title': _('PROMO ATTIVE :'),
                     'message': 'Sono presenti promo per questo tipo di cliente'
                     }
-                  
+              #import pdb;pdb.set_trace()
+              part_obj = self.pool.get('res.partner').browse(cr,uid,part)
+              if part_obj:
+                  val['totale_saldo_punti'] =  part_obj.totale_saldo_punti
                   
           return {'value': val, 'warning': warning}   
       

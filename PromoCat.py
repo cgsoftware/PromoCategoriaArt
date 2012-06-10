@@ -177,7 +177,7 @@ class promo(osv.osv):
                                             if qta_dic:
                                                 # è gia passato una volta 
                                                 totqta+=rig_art.product_uom_qty
-                                                qta_dic['toqta']+= rig_art.product_uom_qty
+                                                qta_dic['totqta']+= rig_art.product_uom_qty
                                                 qta_dic['list_rig'].append(rig_art)
                                                 lst_tot_cat[code] = qta_dic
                                             else:
@@ -199,7 +199,8 @@ class promo(osv.osv):
                                     ok_promo= True
                                 # ora controllo se i totali di categoria sono rispettati
                                 if lst_tot_cat:
-                                    for qta_dic in lst_tot_cat:
+                                    for qta_dic in lst_tot_cat.values():
+                                        #import pdb;pdb.set_trace()
                                         if qta_dic['totqta']>= qta_dic['promo_rig'].qta_mov_min and (qta_dic['totqta']<=qta_dic['promo_rig'].qta_mov_max or qta_dic['promo_rig'].qta_mov_max==0):
                                             # ok la promo è risteppata
                                             pass
