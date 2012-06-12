@@ -266,7 +266,7 @@ class sale_order(osv.osv):
           if ids:
               for document in self.browse(cr,uid,ids):
                 res[document.id] = {'punti_caricati':0.0}
-                res[document.id]['punti_caricati']= self.pool.get('tabella.punti').calc_punti(cr,uid,[document.id],'fiscaldoc.header',context)
+                res[document.id]['punti_caricati']= self.pool.get('tabella.punti').calc_punti(cr,uid,[document.id],'sale.order',context)
                   
           return res
     
@@ -281,19 +281,64 @@ class sale_order(osv.osv):
     
     
     def write(self, cr, uid, ids, vals, context=None):
-       res = super('sale_order',self).write(cr,uid,ids,vals,context)
+       res = super(sale_order,self).write(cr,uid,ids,vals,context)
        if res:
            if ids:
                #ok = self.pool.get('tabella.punti').calc_punti(cr,uid,ids,'sale_order',context)
+               ok = self.pool.get('promo').calcoli_promo(cr,uid,ids,'sale.order',context)
                pass
        return res       
    
     def create(self, cr, uid, vals, context=None):
-       res = super('sale_order',self).create(cr,uid,vals,context)
+       res = super(sale_order,self).create(cr,uid,vals,context)
        if res:
            #ok = self.pool.get('tabella.punti').calc_punti(cr,uid,[res],'sale_order',context)
+           ok = self.pool.get('promo').calcoli_promo(cr,uid,[res],'sale.order',context)
            pass
        return res
+   
+    def onchange_partner_id(self, cr, uid, ids, part):
+        context = False
+        if not part:
+            return {'value': {'partner_invoice_id': False, 'partner_shipping_id': False, 'partner_order_id': False, 'payment_term': False, 'fiscal_position': False}}
+
+        addr = self.pool.get('res.partner').address_get(cr, uid, [part], ['delivery', 'invoice', 'contact'])
+        part = self.pool.get('res.partner').browse(cr, uid, part)
+        pricelist = part.property_product_pricelist and part.property_product_pricelist.id or False
+        payment_term = part.property_payment_term and part.property_payment_term.id or False
+        fiscal_position = part.property_account_position and part.property_account_position.id or False
+        dedicated_salesman = part.user_id and part.user_id.id or uid
+        val = {
+            'partner_invoice_id': addr['invoice'],
+            'partner_order_id': addr['contact'],
+            'partner_shipping_id': addr['delivery'],
+            'payment_term': payment_term,
+            'fiscal_position': fiscal_position,
+            'user_id': dedicated_salesman,
+        }
+        if pricelist:
+            val['pricelist_id'] = pricelist
+            
+        warning =False 
+        if  part:
+              data_rif=time.strftime('%Y-%m-%d')
+              lista_promo = self.pool.get('promo').lista_attive(cr,uid,part,data_rif,context)
+              if lista_promo:
+                  righe_promo = []
+                  for promo in self.pool.get('promo').browse(cr,uid,lista_promo):
+                      righe_promo.append({'promo_id':promo.id,'des_estesa':promo.des_estesa})
+                  val['righe_promo']=righe_promo
+                  warning = {
+                    'title': _('PROMO ATTIVE :'),
+                    'message': 'Sono presenti promo per questo tipo di cliente'
+                    }
+              #import pdb;pdb.set_trace()
+              part_obj = self.pool.get('res.partner').browse(cr,uid,part)
+              if part_obj:
+                  val['totale_saldo_punti'] =  part_obj.totale_saldo_punti
+            
+        return {'value': val,'warning':warning}
+   
 
 sale_order()
 
@@ -305,6 +350,28 @@ class sale_order_line(osv.osv):
     _columns = {
                'promo_id':fields.many2one('promo', 'Promozione Utilizzata', required=False),
                 }
+
+
+    def product_id_change(self, cr, uid, ids, pricelist, product, qty=0,
+            uom=False, qty_uos=0, uos=False, name='', partner_id=False,
+            lang=False, update_tax=True, date_order=False, packaging=False, fiscal_position=False, flag=False):
+        res = super(sale_order_line,self).product_id_change( cr, uid, ids, pricelist, product, qty,
+            uom, qty_uos, uos, name, partner_id,lang, update_tax, date_order, packaging, fiscal_position, flag)
+        result = res.get('value',False)
+        domain = res.get('domain',False)
+        warning = res.get('warning',False)
+        context = {}
+        if not warning and result:
+            message = self.pool.get('promo').promo_articolo_attive(cr,uid,partner_id,date_order,product,context)
+            if message: 
+                warning = {
+                    'title': _('PROMO ATTIVE :'),
+                    'message': message
+                    }
+
+
+        return {'value': result, 'domain': domain, 'warning': warning}
+
 
 
 sale_order_line()

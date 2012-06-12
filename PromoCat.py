@@ -150,7 +150,7 @@ class promo(osv.osv):
                               for riga_art in doc.righe_articoli:
                                 lst_art_promo.append(self.check_promo(cr, uid, model, promo, riga_art))
                             if model == 'sale.order':
-                              for riga_art in doc.line:
+                              for riga_art in doc.order_line:
                                 lst_art_promo.append(self.check_promo(cr, uid, model, promo, riga_art))
                             # a questo punto ho l'elenco delle righe che devono essere tenute in considerazione per il calcoli delle qta da verificare
                             totqta=0
@@ -246,7 +246,8 @@ class promo(osv.osv):
                                                 dativar['totale_riga']=dativar['prezzo_netto']*rig_art.product_uom_qty
                                             if dativar:
                                                 ok  = riga_obj.write(cr,uid,[rig_art.id],dativar)
-                                        else: 
+                                        else:
+                                            #import pdb;pdb.set_trace() 
                                             #ordini di vendita
                                             riga_obj= self.pool.get('sale.order.line')
                                             dativar={}
@@ -255,23 +256,23 @@ class promo(osv.osv):
                                                 if promo_rig.netto_pubb:
                                                     dativar['price_unit']= promo_rig.netto_pubb
                                                 else:
-                                                    dativar['price_unit']= rig_art.product_prezzo_unitario
+                                                    dativar['price_unit']= rig_art.price_unit
                                                 
                                                 if promo_rig.sconto_al_pubb:
                                                     dativar['discount']= promo_rig.sconto_al_pubb
                                                 else:
-                                                    dativar['discount']= rig_art.discount_riga
+                                                    dativar['discount']= rig_art.discount
                                             else:
                                                 # listino rivenditore
                                                 if promo_rig.netto_riv:
                                                     dativar['price_unit']= promo_rig.netto_riv
                                                 else:
-                                                    dativar['price_unit']= rig_art.product_prezzo_unitario
+                                                    dativar['price_unit']= rig_art.price_unit
                                                 
                                                 if promo_rig.sconto_al_riv:
                                                     dativar['discount']= promo_rig.sconto_al_riv
                                                 else:
-                                                    dativar['discount']= rig_art.discount_riga
+                                                    dativar['discount']= rig_art.discount
                                             if dativar:
                                                 ok  = riga_obj.write(cr,uid,[rig_art.id],dativar)
                                             

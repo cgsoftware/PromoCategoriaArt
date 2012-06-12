@@ -7,11 +7,18 @@
                 <field name="type">form</field>
                 <field name="inherit_id" ref="sale.view_order_form"/>
                 <field name="arch" type="xml">
+				<field name="pricelist_id" position="after">
+					<field name="totale_saldo_punti"  readonly="1"  > </field>
+				</field>
+                
 				<notebook position="inside">
 					<page  string="Righe Promo da Utilizzare">
 						<field colspan="4" mode="tree" name="righe_promo" nolabel="1" widget="one2many_list">
 						 <tree editable="top" string="Promo da Utilizzare/Utilizzate">
 						 	<field name="promo_id" > </field>
+						 	 <field name="des_estesa" > </field>
+						 	 <field name="utilizza" > </field>
+						 	
 						 </tree>
 						</field>
 					</page>
@@ -19,7 +26,7 @@
 						<field name="punti_caricati" > </field>
 						<field name="punti_scaricati" > </field>
 						<field name="val_punti_sca" > </field>
-						<field name="totale_saldo_punti" > </field>
+					<!-- 	<field name="totale_saldo_punti" > </field>  -->
 					</page>
 					
 				</notebook>
