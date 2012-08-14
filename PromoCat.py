@@ -385,30 +385,46 @@ class tabella_punti(osv.osv):
                             if model == 'fiscaldoc.header':
                                 calcolo = tabpu.python_code.replace('base','doc.totale_documento')
                                 calcolo = calcolo.replace('qta','1')
-                            else:
+                            if model == 'sale.order':
                                 calcolo = tabpu.python_code.replace('base','doc.amount_total')
                                 calcolo = calcolo.replace('qta','1')
+                            if model == 'pos.order':
+                                calcolo = tabpu.python_code.replace('base','doc.amount_total')
+                                calcolo = calcolo.replace('qta','1')
+                                
                         if tabpu.base_calc == 'tor': # sul totale di riga 
                             if model == 'fiscaldoc.header':
                                 calcolo = tabpu.python_code.replace('base','riga.totale_riga')
                                 calcolo = calcolo.replace('qta','1')
-                            else:
+                            if model == 'sale.order':
                                 calcolo = tabpu.python_code.replace('base','riga.price_subtotal')
                                 calcolo = calcolo.replace('qta','1')
+                            if model == 'pos.order':
+                                calcolo = tabpu.python_code.replace('base','riga.price_subtotal')
+                                calcolo = calcolo.replace('qta','1')
+                                
                         if tabpu.base_calc == 'prl': # sul prezzo di listino assegnato 
                             if model == 'fiscaldoc.header':
                                 calcolo = tabpu.python_code.replace('base','riga.product_prezzo_unitario')
                                 calcolo = calcolo.replace('qta','riga.product_uom_qty')
-                            else:
+                            if model == 'sale.order':
                                 calcolo = tabpu.python_code.replace('base','riga.price_unit')
                                 calcolo = calcolo.replace('qta','riga.product_uom_qty')
+                            if model == 'pos.order':
+                                calcolo = tabpu.python_code.replace('base','riga.price_unit')
+                                calcolo = calcolo.replace('qta','riga.qty')
+                                
                         if tabpu.base_calc == 'prn': # sul prezzo prezzo netto di riga 
                             if model == 'fiscaldoc.header':
                                 calcolo = tabpu.python_code.replace('base','riga.prezzo_netto')
                                 calcolo = calcolo.replace('qta','riga.product_uom_qty')
-                            else:
+                            if model == 'sale.order':
                                 calcolo = tabpu.python_code.replace('base','riga.price_unit* (1 - (discount or 0.0) / 100.0)')
                                 calcolo = calcolo.replace('qta','riga.product_uom_qty')
+                            if model == 'pos.order':
+                                calcolo = tabpu.python_code.replace('base','riga.price_unit* (1 - (riga.price_ded or 0.0) / 100.0)')
+                                calcolo = calcolo.replace('qta','riga.qty')
+                                
                         if tabpu.base_calc == 'tot':
                             # non ho bisogno di cliclare sulle righe del documento
                             numpunti = eval(calcolo)
@@ -470,19 +486,16 @@ class sale_order_promo(osv.osv):
 sale_order_promo()
 
 
-#class mov_punti(osv.osv):
-#    _name = 'mov.punti'
-#    _description = 'movimentazioni  Punti' 
-#    _columns = {
-#                'name': fields.many2one('fiscaldoc.header', 'Numero Documento', required=True, ondelete='cascade', select=True, readonly=True),
-#                'partner_id': fields.many2one('res.partner', 'Cliente', select=True, required=True),
-#                'flag_ope':fields.selection([
-#                        ('ca','Carico Punti'),
-#                        ('sc','Scarico Punti'),
-#                        ],    'Tipo Operazione', select=True, readonly=False),
-#               'punti':fields.float('N. Punti del doc',digits_compute=dp.get_precision('Account'),help="per lo Scarico è Negativo"),
-#                
-#                
-#                }
-#mov_punti()
+class pos_order_promo(osv.osv):
+    _name = 'pos.order.promo'
+    _description = 'Promo dell ordine' 
+    
+    _columns = {
+                'name': fields.many2one('pos.order', 'Ordine', required=True, ondelete='cascade', select=True, readonly=True),        
+                'promo_id':fields.many2one('promo', 'Promo Utilizzata', required=True), # mettere una domain che controlli la data e che selezioni la categoria cliente e solo le promo a totale
+                'des_estesa': fields.text('Descrizione Estesa '),
+                'utilizza':fields.boolean('Utilizza', required=False, help="Se attivo la promozione sarà utilizzata"), 
+                }
+
+pos_order_promo()
 

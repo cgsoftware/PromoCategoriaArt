@@ -44,6 +44,7 @@
 				<notebook position="inside">
 					<page  string="Info Punti">
 						<field name="tab_punti" > </field>	
+						<field name="saldo_iniziale_punti" > </field>	
 						<field name="totale_carichi_punti" > </field>	
 						<newline></newline>					
 						<field name="totale_scarichi_punti" > </field>
@@ -67,6 +68,22 @@
 
                 </field>
             </record>  
+    
+
+    
+       <record model="ir.ui.view" id="pos_order_punti_form_view">
+            <field name="name">pos.order_punti.form</field>
+            <field name="model">pos.order</field>
+            <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+                <field name="arch" type="xml">		  
+				<field name="partner_id" position="after">
+					<field name="totale_saldo_punti"  readonly="1"  > </field>
+						<field name="punti_caricati" > </field>
+						<field name="punti_scaricati" > </field>
+						<field name="val_punti_sca" > </field>					
+				</field>
+				</field>
+				</record>
     
     
     </data>

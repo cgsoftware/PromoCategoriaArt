@@ -215,13 +215,6 @@ class FiscalDocRighe(osv.osv):
         v = res.get('value',False)
         domain = res.get('domain',False)
         warning = res.get('warning',False)
-        #if v and False: # Per il momento si blocca e semplicemnete segnala la presenza di  promo
-        #    vv = self.cerca_promo(cr, uid, ids, product_id, listino_id, qty, partner_id, data_doc, uom, v, context)
-        #    v['product_prezzo_unitario'] = vv['product_prezzo_unitario']
-        #    v['discount_riga'] =vv['discount_riga']
-        #    v['sconti_riga'] = vv['sconti_riga']
-        #    v['prezzo_netto'] = vv['prezzo_netto']
-        #    v['totale_riga'] = vv['totale_riga']
         if not warning and v:
             message = self.pool.get('promo').promo_articolo_attive(cr,uid,partner_id,data_doc,product_id,context)
             if message: 
@@ -245,13 +238,6 @@ class FiscalDocRighe(osv.osv):
         v = res.get('value',False)
         domain = res.get('domain',False)
         warning = res.get('warning',False)
-       # if v and False: # Per il momento si blocca e semplicemnete segnala la presenza di  promo
-       #     vv = self.cerca_promo(cr, uid, ids, product_id, listino_id, qty, partner_id, data_doc, uom, v, context)
-       #     v['product_prezzo_unitario'] = vv['product_prezzo_unitario']
-       #     v['discount_riga'] =vv['discount_riga']
-       #     v['sconti_riga'] = vv['sconti_riga']
-       #     v['prezzo_netto'] = vv['prezzo_netto']
-       #     v['totale_riga'] = vv['totale_riga']
             
     return {'value': v, 'domain': domain, 'warning': warning}
 
@@ -394,6 +380,7 @@ class res_partner(osv.osv):
             if ids:
              for partner_id in  ids:
                  cerca = [('partner_id','=',partner_id)]
+                 partner = self.pool.get('res.partner').browse(cr,uid,partner_id)
                  #,('tipo_documento','<>','DT'),('tipo_documento','<>','PF')
                  ids_docs = self.pool.get('fiscaldoc.header').search(cr,uid,cerca)
                  if ids_docs:
@@ -406,7 +393,7 @@ class res_partner(osv.osv):
                              totale_scarichi_punti += doc.punti_scaricati
                      res[partner_id]['totale_carichi_punti'] = totale_carichi_punti
                      res[partner_id]['totale_scarichi_punti'] = totale_scarichi_punti
-                     res[partner_id]['totale_saldo_punti'] = res[partner_id]['totale_carichi_punti']-res[partner_id]['totale_scarichi_punti']
+                     res[partner_id]['totale_saldo_punti'] = partner.saldo_iniziale_punti + res[partner_id]['totale_carichi_punti']-res[partner_id]['totale_scarichi_punti']
                  else:
                     res[partner_id] = { 'totale_carichi_punti': 0,'totale_scarichi_punti': 0,'totale_saldo_punti': 0}
             return res
@@ -427,7 +414,8 @@ class res_partner(osv.osv):
             return res
     
     _columns = {
-                'tab_punti':fields.many2one('tabella.punti', 'Tabella Punti', required=False),        
+                'tab_punti':fields.many2one('tabella.punti', 'Tabella Punti', required=False), 
+                'saldo_iniziale_punti':fields.float('Saldo Iniziale Punti ',digits_compute=dp.get_precision('Account'),readonly=False),  
                 'totale_carichi_punti':fields.function(_totali_punti, method=True, digits_compute=dp.get_precision('Account'), string='Totale Carico Punti', store=False, multi='sums'),
                 'totale_scarichi_punti': fields.function(_totali_punti, method=True, digits_compute=dp.get_precision('Account'), string='Totale Scarico Punti', store=False, multi='sums'),
                 'totale_saldo_punti': fields.function(_totali_punti, method=True, digits_compute=dp.get_precision('Account'), string='Saldo Punti', store=False, multi='sums'),
@@ -436,3 +424,28 @@ class res_partner(osv.osv):
 
 res_partner()
 
+
+class pos_order(osv.osv):
+    _inherit = "pos.order"
+
+    def _totpunti_doc(self, cr, uid, ids, field_name, arg, context=None):
+          res={}
+          if ids:
+              for document in self.browse(cr,uid,ids):
+                res[document.id] = {'punti_caricati':0.0}
+                res[document.id]['punti_caricati']= self.pool.get('tabella.punti').calc_punti(cr,uid,[document.id],'pos.order',context)
+                  
+          return res
+
+
+
+    _columns = {
+                'righe_promo': fields.one2many('pos.order.promo', 'name', 'Promo Attive alla Conferma', required=False),
+                'punti_caricati':fields.function(_totpunti_doc, method=True, digits_compute=dp.get_precision('Account'), string='N. Punti Caricati', store=False,multi='sums' ),
+                'punti_scaricati':fields.float('N. Punti Scaricati ',digits_compute=dp.get_precision('Account'),readonly=True),
+                'val_punti_sca':fields.float('Valore Punti Scaricati',digits_compute=dp.get_precision('Account'),readonly=True),   
+                'totale_saldo_punti': fields.related('partner_id', 'totale_saldo_punti', string='Saldo Punti', type='float', relation='res.partner', help="Saldo Punti Attuale"),                             
+                }
+
+
+pos_order()
